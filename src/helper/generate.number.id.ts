@@ -1,7 +1,5 @@
 import { v4 as uuid } from 'uuid';
 
-const uuidParse = require('uuid').parse;
-
 const getUnsignedInt32Ranged = () => {
   const id = uuid();
   const buffer = Buffer.from(id);

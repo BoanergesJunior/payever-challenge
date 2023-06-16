@@ -1,44 +1,50 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import axios from 'axios';
-import {  IUserResponse } from './user.model';
-import { generateNumberId } from 'src/helper';
+import { IUserResponse } from './user.model';
+import { generateNumberId, producer, sendEmail } from 'src/helper';
 import { CreateUserDto } from './dto/create-user.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User } from './schemas/user.schema';
 
 @Injectable()
 export class UsersService {
-  private baseUrl = 'https://reqres.in' // colocar na env
-  private users = [];
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+  ) {}
 
   async getAllUsers(id: string): Promise<IUserResponse> {
-    const response = await axios.get(`${this.baseUrl}/api/users/${id}`)
-    return response.data
+    try {
+      const response = await axios.get(
+        `${process.env.REQ_RES_BASE_URL}/api/users/${id}`,
+      );
+      const { data } = response.data;
+      return data;
+    } catch (err) {
+      throw new NotFoundException('User not found');
+    }
   }
 
-  createUser(createUserDto: CreateUserDto): { [key: string]: number } {
-    // inserir no mongo
-    // enviar email
-    // rabbit event
-    const { first_name, last_name, email, avatar } = createUserDto
-    const newUser = {
+  async createUser(
+    createUserDto: CreateUserDto,
+  ): Promise<{ [key: string]: number }> {
+    const { first_name, last_name, email, avatar } = createUserDto;
+    const messageProducer = await producer();
+
+    const newUser = new this.userModel({
       id: generateNumberId(),
       first_name,
       last_name,
       email,
       avatar,
-    }
+    });
 
-    this.users.push(newUser)
+    await sendEmail(email);
+
+    messageProducer.sendToQueue('users', Buffer.from(JSON.stringify(newUser)));
+
+    await newUser.save();
 
     return { id: newUser.id };
-  }
-
-  getAvatar(id: string): string {
-    console.log(id);
-    return '';
-  }
-  
-  deleteAvatar(id: string): boolean {
-    console.log(id);
-    return true;
   }
 }

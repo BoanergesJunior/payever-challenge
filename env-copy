@@ -1,0 +1,8 @@
+MONGO_URL=mongodb://localhost:27017
+MAILER_USER=mail_user
+MAILER_PASS=mail_pass
+MAILER_FROM=noreplay@challenge.payever.com
+MAILER_HOST=sandbox.smtp.mailtrap.io
+REQ_RES_BASE_URL=https://reqres.in
+AMQP_SERVER_URL=http://localhost:15672
+QUEUE_NAME=users
