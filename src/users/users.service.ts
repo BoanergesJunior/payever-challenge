@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import axios from 'axios';
 import { IUserResponse } from './user.model';
-import { generateNumberId, producer, sendEmail } from 'src/helper';
+import { generateNumberId, producer, sendEmail } from '../helpers';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';

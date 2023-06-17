@@ -17,28 +17,34 @@ export class ImagesService {
       return { userId: image.userId, image64: image.image64 };
     }
 
-    const response = await axios.get(
-      `${process.env.REQ_RES_BASE_URL}/api/users/${id}`,
-    );
-    const { data } = response.data;
+    try {
+      const response = await axios.get(
+        `${process.env.REQ_RES_BASE_URL}/api/users/${id}`,
+      );
+      const { data } = response.data;
 
-    const avatarUrl = data.avatar;
+      const avatarUrl = data.avatar;
 
-    const responseUrl = await axios.get(avatarUrl, {
-      responseType: 'arraybuffer',
-    });
-    console.log(responseUrl.data);
-    const image64 = Buffer.from(responseUrl.data, 'binary').toString('base64');
+      const responseUrl = await axios.get(avatarUrl, {
+        responseType: 'arraybuffer',
+      });
 
-    const buildImage = {
-      userId: Number(id),
-      image64,
-    };
+      const image64 = Buffer.from(responseUrl.data, 'binary').toString(
+        'base64',
+      );
 
-    const newImage = new this.imageModel(buildImage);
-    await newImage.save();
+      const buildImage = {
+        userId: Number(id),
+        image64,
+      };
 
-    return buildImage;
+      const newImage = new this.imageModel(buildImage);
+      await newImage.save();
+
+      return buildImage;
+    } catch (err) {
+      throw new Error('Image not found');
+    }
   }
 
   async deleteAvatar(id: string): Promise<boolean> {
